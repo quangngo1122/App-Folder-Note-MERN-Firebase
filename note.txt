@@ -1,0 +1,20 @@
+//backend
+    npm init
+    npm i --save @apollo/server express http cors body-parser
+    npm i -g nodemon
+
+
+    ***
+
+//fontend
+    npm create vite
+    npm i
+    npm install --save-dev eslint-config-react-app eslint@^8.0.0
+    npm install @mui/material @emotion/react @emotion/styled
+    npm install --save @fontsource/roboto
+    npm install --save @mui/icons-material
+    npm i --save react-draft-wysiwyg draft-js
+    npm i --save draftjs-to-html
+
+    ***
+    firebase --> dung de xac thuc authentication
