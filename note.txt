@@ -2,6 +2,8 @@
     npm init
     npm i --save @apollo/server express http cors body-parser
     npm i -g nodemon
+    npm i --save mongoose
+    npm i --save dotenv
 
 
     ***
@@ -18,3 +20,4 @@
 
     ***
     firebase --> dung de xac thuc authentication
+    JWT --> dung token de gui len backend xac thuc (verify) tai khoan co hop le ko, sau do backend moi xu ly

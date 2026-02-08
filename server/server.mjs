@@ -2,11 +2,17 @@ import express from "express";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import cors from "cors";
-import bodyParser from "body-parser";
+// import bodyParser from "body-parser";
+import mongoose from "mongoose";
 
 import http from "http";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
-import fakeData from "./fakeData/index.js";
+
+// import fakeData from "./fakeData/index.js";
+import { resolvers } from "./resolvers/index.js";
+import { typeDefs } from "./schemas/index.js";
+
+import "dotenv/config";
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -16,40 +22,8 @@ const httpServer = http.createServer(app);
 // typedef --> như một cuốn tài liệu định nghĩa dữ liệu dữ liệu nào sẽ thuộc KDL nào
 // resolvers --> xử lý dữ liệu, trả về dữ liệu cho client dựa theo những query từ client gửi tới
 
-const typeDefs = `#graphql
-type Folder{
-  id:String,
-  name:String,
-  createAt:String,
-  author:Author
-}
-
-type Author{
-  id:String,
-  name:String
-}
-type Query{
-  folders:[Folder]
-}
-# type Mutation{
-# }
-# type Subscription{
-# }
-`;
-const resolvers = {
-  Query: {
-    folders: () => {
-      return fakeData.folders; //<-- parent
-    },
-  },
-  Folder: {
-    author: (parent, args, context, info) => {
-      const authorId = parent.authorId;
-      return fakeData.authors.find((author) => author.id === authorId);
-      // return { id: "123", name: "quang" };
-    },
-  },
-};
+const URL = process.env.DB_CONNECT;
+const PORT = process.env.PORT || 4000;
 
 // create apoloserver
 const server = new ApolloServer({
@@ -64,6 +38,17 @@ await server.start();
 // app.use(cors(), bodyParser.json(), expressMiddleware(server));
 app.use("/graphql", cors(), express.json(), expressMiddleware(server));
 
-await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
+//--> Mongoose ≤ 5
+// mongoose
+//   .connect(URL, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+//   })
 
-console.log("Server ready at http://localhost:4000/");
+//-->Mongoose 7/8
+mongoose.connect(URL, {}).then(async () => {
+  console.log("connected to DB");
+  await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
+
+  console.log("Server ready at http://localhost:4000/");
+});
