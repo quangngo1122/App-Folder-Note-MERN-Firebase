@@ -4,15 +4,14 @@ import { expressMiddleware } from "@apollo/server/express4";
 import cors from "cors";
 // import bodyParser from "body-parser";
 import mongoose from "mongoose";
-
 import http from "http";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
-
 // import fakeData from "./fakeData/index.js";
 import { resolvers } from "./resolvers/index.js";
 import { typeDefs } from "./schemas/index.js";
-
 import "dotenv/config";
+import "./firebaseConfig.js";
+import { getAuth } from "firebase-admin/auth";
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -35,8 +34,41 @@ const server = new ApolloServer({
 //mjs thì ko cần bọc await trong func async
 await server.start();
 
+const authorizationJWT = async (req, res, next) => {
+  // console.log({ authorization: req.headers.authorization });
+  const authorizationHeader = req.headers.authorization;
+
+  if (authorizationHeader) {
+    // phần tử 0 là bearer phần tử 1 là accesstoken
+    const accessToken = authorizationHeader.split(" ")[1];
+    getAuth()
+      .verifyIdToken(accessToken)
+      .then((decodedToken) => {
+        // console.log({ decodedToken });
+        res.locals.uid = decodedToken.uid;
+        next();
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.status(403).json({ message: "Forbidden", error: err });
+      });
+  } else {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+};
+
 // app.use(cors(), bodyParser.json(), expressMiddleware(server));
-app.use("/graphql", cors(), express.json(), expressMiddleware(server));
+app.use(
+  "/graphql",
+  cors(),
+  authorizationJWT,
+  express.json(),
+  expressMiddleware(server, {
+    context: async ({ req, res }) => {
+      return { uid: res.locals.uid };
+    },
+  }),
+);
 
 //--> Mongoose ≤ 5
 // mongoose

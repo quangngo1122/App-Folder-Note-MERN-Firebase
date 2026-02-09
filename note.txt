@@ -4,6 +4,7 @@
     npm i -g nodemon
     npm i --save mongoose
     npm i --save dotenv
+    npm i --save firebase-admin
 
 
     ***
@@ -19,5 +20,5 @@
     npm i --save draftjs-to-html
 
     ***
-    firebase --> dung de xac thuc authentication
+    firebase --> dung de xac thuc authentication, ko can refresh token nhu cach lam thong thuong voi JWT
     JWT --> dung token de gui len backend xac thuc (verify) tai khoan co hop le ko, sau do backend moi xu ly
