@@ -1,15 +1,52 @@
-import { Box, Card, CardContent, Grid, List, Typography } from "@mui/material";
-import React, { useState } from "react";
-import { Link, Outlet, useLoaderData, useParams } from "react-router-dom";
+import { NoteAltOutlined } from "@mui/icons-material";
+import {
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  IconButton,
+  List,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+  Link,
+  Outlet,
+  useLoaderData,
+  useNavigate,
+  useParams,
+  useSubmit,
+} from "react-router-dom";
 
 export default function NoteList({}) {
   const { folder } = useLoaderData();
   // console.log(folder);
-
-  const { noteId } = useParams();
+  const { noteId, folderId } = useParams(); // duong dan
   const [activeNoteId, setActiveNoteId] = useState(noteId);
   // const folder = { notes: [{ id: "1", content: "note 1" }] };
+  const navigate = useNavigate();
+  const submit = useSubmit();
 
+  const handleAddNewNote = () => {
+    submit(
+      {
+        content: "",
+        folderId: folderId,
+      },
+      { method: "post", action: `/folders/${folderId}` },
+    );
+  };
+  useEffect(() => {
+    if (noteId) {
+      setActiveNoteId(noteId);
+      return;
+    }
+    if (folder?.notes?.[0]) {
+      navigate(`note/${folder.notes[0].id}`);
+      return;
+    }
+  }, [noteId, folder.notes]);
   return (
     <Grid container height="100%" wrap="nowrap">
       <Grid
@@ -27,8 +64,19 @@ export default function NoteList({}) {
       >
         <List
           subheader={
-            <Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
               <Typography sx={{ fontWeight: "bold" }}>Notes</Typography>
+              <Tooltip title="Add Note" onClick={handleAddNewNote}>
+                <IconButton size="small">
+                  <NoteAltOutlined />
+                </IconButton>
+              </Tooltip>
             </Box>
           }
         >

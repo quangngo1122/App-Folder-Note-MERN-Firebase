@@ -37,7 +37,10 @@ await server.start();
 const authorizationJWT = async (req, res, next) => {
   // console.log({ authorization: req.headers.authorization });
   const authorizationHeader = req.headers.authorization;
-
+  if (!authorizationHeader) {
+    res.locals.uid = null;
+    return next();
+  }
   if (authorizationHeader) {
     // phần tử 0 là bearer phần tử 1 là accesstoken
     const accessToken = authorizationHeader.split(" ")[1];
