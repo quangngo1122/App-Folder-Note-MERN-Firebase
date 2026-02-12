@@ -18,6 +18,7 @@ import {
   useParams,
   useSubmit,
 } from "react-router-dom";
+import moment from "moment";
 
 export default function NoteList({}) {
   const { folder } = useLoaderData();
@@ -80,7 +81,7 @@ export default function NoteList({}) {
             </Box>
           }
         >
-          {folder.notes.map(({ id, content }) => {
+          {folder.notes.map(({ id, content, updatedAt }) => {
             return (
               <Link
                 key={id}
@@ -106,6 +107,9 @@ export default function NoteList({}) {
                         __html: `${content.substring(0, 30) || "Empty"}`,
                       }}
                     />
+                    <Typography sx={{ fontSize: "10px" }}>
+                      {moment(updatedAt).format("MMMM Do YYYY, h:mm:ss a")}
+                    </Typography>
                   </CardContent>
                 </Card>
               </Link>

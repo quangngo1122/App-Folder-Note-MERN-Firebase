@@ -18,6 +18,7 @@
     npm install --save @mui/icons-material
     npm i --save react-draft-wysiwyg draft-js
     npm i --save draftjs-to-html
+    npm i --save moment --> dinh dang time hien thi
 
     ***
     firebase --> dung de xac thuc authentication, ko can refresh token nhu cach lam thong thuong voi JWT
