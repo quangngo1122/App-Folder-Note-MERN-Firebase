@@ -4,6 +4,7 @@ import React from "react";
 import UserMenu from "../components/UserMenu";
 import FolderList from "../components/FolderList";
 import { Link, Outlet, useLoaderData } from "react-router-dom";
+import PushNotification from "../components/PushNotification";
 
 export default function Home() {
   const { folders } = useLoaderData();
@@ -24,6 +25,7 @@ export default function Home() {
       </Typography>
       <Box sx={{ display: "flex", justifyContent: "right", mb: "10px" }}>
         <UserMenu />
+        <PushNotification />
       </Box>
 
       <Grid

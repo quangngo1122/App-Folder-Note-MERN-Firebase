@@ -5,6 +5,8 @@
     npm i --save mongoose
     npm i --save dotenv
     npm i --save firebase-admin
+    npm install graphql-ws ws @graphql-tools/schema
+    npm install graphql-subscriptions
 
 
     ***
@@ -19,6 +21,8 @@
     npm i --save react-draft-wysiwyg draft-js
     npm i --save draftjs-to-html
     npm i --save moment --> dinh dang time hien thi
+    npm i graphql-ws
+    npm i graphql
 
     ***
     firebase --> dung de xac thuc authentication, ko can refresh token nhu cach lam thong thuong voi JWT

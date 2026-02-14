@@ -13,6 +13,13 @@ import "dotenv/config";
 import "./firebaseConfig.js";
 import { getAuth } from "firebase-admin/auth";
 
+//schema subszription + websocket
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import { WebSocketServer } from "ws";
+import { useServer } from "graphql-ws/use/ws";
+import { PubSub } from "graphql-subscriptions";
+const pubsub = new PubSub();
+
 const app = express();
 const httpServer = http.createServer(app);
 
@@ -24,11 +31,37 @@ const httpServer = http.createServer(app);
 const URL = process.env.DB_CONNECT;
 const PORT = process.env.PORT || 4000;
 
+const schema = makeExecutableSchema({ typeDefs, resolvers });
+// Creating the WebSocket server
+const wsServer = new WebSocketServer({
+  // This is the `httpServer` we created in a previous step.
+  server: httpServer,
+  // Pass a different path here if app.use
+  // serves expressMiddleware at a different path
+  path: "/subscriptions",
+});
+// Hand in the schema we just created and have the
+// WebSocketServer start listening.
+const serverCleanup = useServer({ schema }, wsServer);
+
 // create apoloserver
 const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  // typeDefs,
+  // resolvers,
+  schema,
+  plugins: [
+    ApolloServerPluginDrainHttpServer({ httpServer }),
+    // Proper shutdown for the WebSocket server.
+    {
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            await serverCleanup.dispose();
+          },
+        };
+      },
+    },
+  ],
 });
 
 //mjs thì ko cần bọc await trong func async
@@ -85,5 +118,5 @@ mongoose.connect(URL, {}).then(async () => {
   console.log("connected to DB");
   await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
 
-  console.log("Server ready at http://localhost:4000/");
+  console.log(`Server ready at http://localhost:${PORT}/graphql`);
 });

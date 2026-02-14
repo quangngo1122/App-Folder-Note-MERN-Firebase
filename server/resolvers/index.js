@@ -1,6 +1,9 @@
 // import fakeData from "../fakeData/index.js";
 import { AuthorModel, FolderModel, NoteModel } from "../models/index.js";
-import { GraphQLScalarType } from "graphql";
+import { GraphQLScalarType, subscribe } from "graphql";
+import notificationModel from "../models/NotificationModel.js";
+import { PubSub } from "graphql-subscriptions";
+const pubsub = new PubSub();
 
 export const resolvers = {
   Date: new GraphQLScalarType({
@@ -57,6 +60,11 @@ export const resolvers = {
     addFolder: async (parent, args, context) => {
       const newFolder = new FolderModel({ ...args, authorId: context.uid });
       //   console.log(newFolder);
+      pubsub.publish("FOLDER_CREATED", {
+        folderCreated: {
+          message: "A New Folder Created",
+        },
+      });
       await newFolder.save();
       return newFolder;
     },
@@ -78,6 +86,24 @@ export const resolvers = {
       const noteId = args.id;
       const note = await NoteModel.findByIdAndUpdate(noteId, args);
       return note;
+    },
+    pushNotification: async (parent, args) => {
+      const newNotification = new notificationModel(args);
+      pubsub.publish("PUSH_NOTIFICATION", {
+        notification: {
+          message: args.content,
+        },
+      });
+      await newNotification.save();
+      return { message: "SUCCESS" };
+    },
+  },
+  Subscription: {
+    folderCreated: {
+      subscribe: () => pubsub.asyncIterableIterator(["FOLDER_CREATED"]),
+    },
+    notification: {
+      subscribe: () => pubsub.asyncIterableIterator(["PUSH_NOTIFICATION"]),
     },
   },
 };
