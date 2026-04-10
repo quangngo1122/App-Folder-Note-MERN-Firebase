@@ -68,6 +68,23 @@ export const resolvers = {
       await newFolder.save();
       return newFolder;
     },
+    updateFolder: async (parent, args, context) => {
+      const { id, name } = args;
+      const folder = await FolderModel.findByIdAndUpdate(
+        id,
+        { name },
+        { new: true },
+      );
+      return folder;
+    },
+    deleteFolder: async (parent, args, context) => {
+      const { id } = args;
+      // Xóa tất cả notes trong folder
+      await NoteModel.deleteMany({ folderId: id });
+      // Xóa folder
+      await FolderModel.findByIdAndDelete(id);
+      return { message: "Folder and its notes deleted successfully" };
+    },
     register: async (parent, args) => {
       const foundUser = await AuthorModel.findOne({ uid: args.uid });
       if (!foundUser) {

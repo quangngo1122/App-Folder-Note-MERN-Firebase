@@ -52,7 +52,8 @@ export default function NoteList({}) {
     <Grid container height="100%" wrap="nowrap">
       <Grid
         item
-        xs={4}
+        // xs={4}
+        size={4}
         sx={{
           width: "100%",
           maxWidth: 360,
@@ -117,7 +118,14 @@ export default function NoteList({}) {
           })}
         </List>
       </Grid>
-      <Grid item xs={8}>
+      <Grid
+        item
+        //  xs={8}
+        size={8}
+        sx={{
+          width: "100%",
+        }}
+      >
         <Outlet />
       </Grid>
     </Grid>

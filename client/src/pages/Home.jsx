@@ -1,14 +1,24 @@
 import { Grid, Typography } from "@mui/material";
 import { Box } from "@mui/system";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import UserMenu from "../components/UserMenu";
 import FolderList from "../components/FolderList";
 import { Link, Outlet, useLoaderData } from "react-router-dom";
 import PushNotification from "../components/PushNotification";
+import { foldersLoader } from "../utils/folderUtils";
 
 export default function Home() {
-  const { folders } = useLoaderData();
-  // console.log(data);
+  const { folders: initialFolders } = useLoaderData();
+  const [folders, setFolders] = useState(initialFolders);
+
+  const handleUpdateFolders = async () => {
+    const { folders: updatedFolders } = await foldersLoader();
+    setFolders(updatedFolders);
+  };
+
+  useEffect(() => {
+    setFolders(initialFolders);
+  }, [initialFolders]);
 
   return (
     <>
@@ -33,7 +43,7 @@ export default function Home() {
         sx={{ height: "50vh", boxShadow: "0 0 15px 0 rgb(193 193 193 /60%)" }}
       >
         <Grid size={3} sx={{ height: "100%" }}>
-          <FolderList folders={folders} />
+          <FolderList folders={folders} onUpdate={handleUpdateFolders} />
         </Grid>
         <Grid size={9} sx={{ height: "100%" }}>
           <Outlet />

@@ -24,6 +24,8 @@ type Query{
 }
 type Mutation{
     addFolder(name:String!):Folder,
+    updateFolder(id:String!, name:String!):Folder,
+    deleteFolder(id:String!):Message,
     register(uid:String!, name:String!):Author,
     addNote(content:String!, folderId:ID!):Note,
     updateNote(id:String!,content:String!):Note,

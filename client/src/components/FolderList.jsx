@@ -1,13 +1,36 @@
-import { Box, Card, CardContent, List, Typography } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  List,
+  Typography,
+  IconButton,
+  Button,
+} from "@mui/material";
 import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import NewFolder from "./NewFolder";
+import EditFolder from "./EditFolder";
+import { deleteFolder } from "../utils/folderUtils";
+import { Edit, Delete } from "@mui/icons-material";
 
-export default function FolderList({ folders }) {
+export default function FolderList({ folders, onUpdate }) {
   const { folderId } = useParams();
   // console.log(params);
 
   const [activeFolderId, setActiveFolderId] = useState(folderId);
+  const [hoveredFolderId, setHoveredFolderId] = useState(null);
+
+  const handleDelete = async (folderId) => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this folder and all its notes?",
+      )
+    ) {
+      await deleteFolder(folderId);
+      onUpdate(); // Refresh folders
+    }
+  };
 
   return (
     <List
@@ -37,32 +60,61 @@ export default function FolderList({ folders }) {
     >
       {folders.map(({ id, name }) => {
         return (
-          <Link
+          <Box
             key={id}
-            to={`folders/${id}`}
-            style={{
-              textDecoration: "none",
-            }}
-            onClick={() => {
-              setActiveFolderId(id);
-            }}
+            onMouseEnter={() => setHoveredFolderId(id)}
+            onMouseLeave={() => setHoveredFolderId(null)}
+            sx={{ position: "relative" }}
           >
-            <Card
-              sx={{
-                mb: "5px",
-                backgroundColor:
-                  id === activeFolderId ? "rgb(255 211 140)" : null,
+            <Link
+              to={`folders/${id}`}
+              style={{
+                textDecoration: "none",
+              }}
+              onClick={() => {
+                setActiveFolderId(id);
               }}
             >
-              <CardContent
-                sx={{ "&:last-child": { pb: "10px" }, padding: "10px" }}
+              <Card
+                sx={{
+                  mb: "5px",
+                  backgroundColor:
+                    id === activeFolderId ? "rgb(255 211 140)" : null,
+                }}
               >
-                <Typography sx={{ fontSize: 16, fontWeight: "bold" }}>
-                  {name}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Link>
+                <CardContent
+                  sx={{ "&:last-child": { pb: "10px" }, padding: "10px" }}
+                >
+                  <Typography sx={{ fontSize: 16, fontWeight: "bold" }}>
+                    {name}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Link>
+            {hoveredFolderId === id && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  display: "flex",
+                  pt: 1,
+                  borderRadius: 1,
+                }}
+              >
+                <EditFolder folder={{ id, name }} onUpdate={onUpdate} />
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleDelete(id);
+                  }}
+                >
+                  <Delete sx={{ fontSize: 16 }} />
+                </IconButton>
+              </Box>
+            )}
+          </Box>
         );
       })}
     </List>

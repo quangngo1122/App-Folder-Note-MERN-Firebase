@@ -43,3 +43,30 @@ export const addNewFolder = async (newFolder) => {
   });
   return data;
 };
+
+export const updateFolder = async (folder) => {
+  const query = `mutation Mutation($id: String!, $name: String!) {
+                    updateFolder(id: $id, name: $name) {
+                      id
+                      name
+                    }
+                  }`;
+  const data = await graphQLRequest({
+    query,
+    variables: { id: folder.id, name: folder.name },
+  });
+  return data;
+};
+
+export const deleteFolder = async (folderId) => {
+  const query = `mutation Mutation($id: String!) {
+                    deleteFolder(id: $id) {
+                      message
+                    }
+                  }`;
+  const data = await graphQLRequest({
+    query,
+    variables: { id: folderId },
+  });
+  return data;
+};
