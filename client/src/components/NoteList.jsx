@@ -19,6 +19,8 @@ import {
   useSubmit,
 } from "react-router-dom";
 import moment from "moment";
+import { useToast } from "../hooks/useToast";
+import Toast from "./Toast";
 
 export default function NoteList({}) {
   const { folder } = useLoaderData();
@@ -28,15 +30,21 @@ export default function NoteList({}) {
   // const folder = { notes: [{ id: "1", content: "note 1" }] };
   const navigate = useNavigate();
   const submit = useSubmit();
+  const { toast, showToast, closeToast } = useToast();
 
   const handleAddNewNote = () => {
-    submit(
-      {
-        content: "",
-        folderId: folderId,
-      },
-      { method: "post", action: `/folders/${folderId}` },
-    );
+    try {
+      submit(
+        {
+          content: "",
+          folderId: folderId,
+        },
+        { method: "post", action: `/folders/${folderId}` },
+      );
+      showToast("Note created successfully!", "success");
+    } catch (error) {
+      showToast("Error creating note", "error");
+    }
   };
   useEffect(() => {
     if (noteId) {
@@ -128,6 +136,12 @@ export default function NoteList({}) {
       >
         <Outlet />
       </Grid>
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={closeToast}
+      />
     </Grid>
   );
 }

@@ -13,6 +13,8 @@ import NewFolder from "./NewFolder";
 import EditFolder from "./EditFolder";
 import { deleteFolder } from "../utils/folderUtils";
 import { Edit, Delete } from "@mui/icons-material";
+import { useToast } from "../hooks/useToast";
+import Toast from "./Toast";
 
 export default function FolderList({ folders, onUpdate }) {
   const { folderId } = useParams();
@@ -20,103 +22,118 @@ export default function FolderList({ folders, onUpdate }) {
 
   const [activeFolderId, setActiveFolderId] = useState(folderId);
   const [hoveredFolderId, setHoveredFolderId] = useState(null);
+  const { toast, showToast, closeToast } = useToast();
 
   const handleDelete = async (folderId) => {
+    const folderName = folders.find((f) => f.id === folderId)?.name || "Folder";
     if (
       window.confirm(
         "Are you sure you want to delete this folder and all its notes?",
       )
     ) {
-      await deleteFolder(folderId);
-      onUpdate(); // Refresh folders
+      try {
+        await deleteFolder(folderId);
+        showToast(`Folder "${folderName}" deleted successfully!`, "success");
+        onUpdate(); // Refresh folders
+      } catch (error) {
+        showToast("Error deleting folder", "error");
+      }
     }
   };
 
   return (
-    <List
-      sx={{
-        width: "100%",
-        maxWidth: 360,
-        bgcolor: "#7D9D9C",
-        height: "100%",
-        padding: "10px",
-        textAlign: "left",
-        overflowY: "auto",
-      }}
-      subheader={
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Typography sx={{ fontWeight: "bold", color: "white" }}>
-            Folder
-          </Typography>
-          <NewFolder />
-        </Box>
-      }
-    >
-      {folders.map(({ id, name }) => {
-        return (
+    <>
+      <List
+        sx={{
+          width: "100%",
+          maxWidth: 360,
+          bgcolor: "#7D9D9C",
+          height: "100%",
+          padding: "10px",
+          textAlign: "left",
+          overflowY: "auto",
+        }}
+        subheader={
           <Box
-            key={id}
-            onMouseEnter={() => setHoveredFolderId(id)}
-            onMouseLeave={() => setHoveredFolderId(null)}
-            sx={{ position: "relative" }}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
           >
-            <Link
-              to={`folders/${id}`}
-              style={{
-                textDecoration: "none",
-              }}
-              onClick={() => {
-                setActiveFolderId(id);
-              }}
+            <Typography sx={{ fontWeight: "bold", color: "white" }}>
+              Folder
+            </Typography>
+            <NewFolder />
+          </Box>
+        }
+      >
+        {folders.map(({ id, name }) => {
+          return (
+            <Box
+              key={id}
+              onMouseEnter={() => setHoveredFolderId(id)}
+              onMouseLeave={() => setHoveredFolderId(null)}
+              sx={{ position: "relative" }}
             >
-              <Card
-                sx={{
-                  mb: "5px",
-                  backgroundColor:
-                    id === activeFolderId ? "rgb(255 211 140)" : null,
+              <Link
+                to={`folders/${id}`}
+                style={{
+                  textDecoration: "none",
+                }}
+                onClick={() => {
+                  setActiveFolderId(id);
                 }}
               >
-                <CardContent
-                  sx={{ "&:last-child": { pb: "10px" }, padding: "10px" }}
-                >
-                  <Typography sx={{ fontSize: 16, fontWeight: "bold" }}>
-                    {name}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Link>
-            {hoveredFolderId === id && (
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  right: 0,
-                  display: "flex",
-                  pt: 1,
-                  borderRadius: 1,
-                }}
-              >
-                <EditFolder folder={{ id, name }} onUpdate={onUpdate} />
-                <IconButton
-                  size="small"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleDelete(id);
+                <Card
+                  sx={{
+                    mb: "5px",
+                    backgroundColor:
+                      id === activeFolderId ? "rgb(255 211 140)" : null,
                   }}
                 >
-                  <Delete sx={{ fontSize: 16 }} />
-                </IconButton>
-              </Box>
-            )}
-          </Box>
-        );
-      })}
-    </List>
+                  <CardContent
+                    sx={{ "&:last-child": { pb: "10px" }, padding: "10px" }}
+                  >
+                    <Typography sx={{ fontSize: 16, fontWeight: "bold" }}>
+                      {name}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Link>
+              {hoveredFolderId === id && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    display: "flex",
+                    pt: 1,
+                    borderRadius: 1,
+                  }}
+                >
+                  <EditFolder folder={{ id, name }} onUpdate={onUpdate} />
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDelete(id);
+                    }}
+                  >
+                    <Delete sx={{ fontSize: 16 }} />
+                  </IconButton>
+                </Box>
+              )}
+            </Box>
+          );
+        })}
+      </List>
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={closeToast}
+      />
+    </>
   );
 }

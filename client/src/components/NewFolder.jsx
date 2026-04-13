@@ -13,11 +13,14 @@ import { CreateNewFolderOutlined } from "@mui/icons-material";
 import { addNewFolder } from "../utils/folderUtils";
 import { useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { useToast } from "../hooks/useToast";
+import Toast from "./Toast";
 
 export default function NewFolder() {
   const [newFolderName, setNewFolderName] = useState();
   const [open, setOpen] = useState(false);
   const [searchParam, setSearchParam] = useSearchParams();
+  const { toast, showToast, closeToast } = useToast();
 
   const popupName = searchParam.get("popup");
   const navigate = useNavigate();
@@ -35,9 +38,14 @@ export default function NewFolder() {
     navigate(-1);
   };
   const handleAddNewFolder = async () => {
-    const { addFolder } = await addNewFolder({ name: newFolderName });
-    console.log({ addFolder });
-    handleClose();
+    try {
+      const { addFolder } = await addNewFolder({ name: newFolderName });
+      console.log({ addFolder });
+      showToast(`Folder "${newFolderName}" created successfully!`, "success");
+      handleClose();
+    } catch (error) {
+      showToast("Error creating folder", "error");
+    }
   };
 
   useEffect(() => {
@@ -76,6 +84,12 @@ export default function NewFolder() {
           <Button onClick={handleAddNewFolder}>OK</Button>
         </DialogActions>
       </Dialog>
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={closeToast}
+      />
     </div>
   );
 }

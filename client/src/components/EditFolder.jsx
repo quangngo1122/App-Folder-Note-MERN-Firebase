@@ -13,11 +13,14 @@ import { Edit } from "@mui/icons-material";
 import { updateFolder } from "../utils/folderUtils";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useToast } from "../hooks/useToast";
+import Toast from "./Toast";
 
 export default function EditFolder({ folder, onUpdate }) {
   const [folderName, setFolderName] = useState(folder.name);
   const [open, setOpen] = useState(false);
   const [searchParam, setSearchParam] = useSearchParams();
+  const { toast, showToast, closeToast } = useToast();
 
   const popupName = searchParam.get("popup");
   const navigate = useNavigate();
@@ -36,13 +39,18 @@ export default function EditFolder({ folder, onUpdate }) {
   };
 
   const handleUpdateFolder = async () => {
-    const { updateFolder: updatedFolder } = await updateFolder({
-      id: folder.id,
-      name: folderName,
-    });
-    console.log({ updatedFolder });
-    onUpdate(); // Callback to refresh folders
-    handleClose();
+    try {
+      const { updateFolder: updatedFolder } = await updateFolder({
+        id: folder.id,
+        name: folderName,
+      });
+      console.log({ updatedFolder });
+      showToast(`Folder renamed to "${folderName}"!`, "success");
+      onUpdate(); // Callback to refresh folders
+      handleClose();
+    } catch (error) {
+      showToast("Error updating folder", "error");
+    }
   };
 
   useEffect(() => {
@@ -82,6 +90,12 @@ export default function EditFolder({ folder, onUpdate }) {
           <Button onClick={handleUpdateFolder}>OK</Button>
         </DialogActions>
       </Dialog>
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={closeToast}
+      />
     </div>
   );
 }
