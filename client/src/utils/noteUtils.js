@@ -95,3 +95,21 @@ export const updateNote = async ({ params, request }) => {
 
   return updateNote;
 };
+
+export const deleteNote = async ({ params, request }) => {
+  const formDataObj = {};
+  const noteData = await request.formData();
+  noteData.forEach((value, key) => (formDataObj[key] = value));
+
+  const query = `mutation Mutation($id: String!) {
+                  deleteNote(id: $id) {
+                    message
+                  }
+                }`;
+  const { deleteNote } = await graphQLRequest({
+    query,
+    variables: { id: formDataObj.id },
+  });
+
+  return deleteNote;
+};

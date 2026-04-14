@@ -11,6 +11,7 @@ import {
   noteLoader,
   notesLoader,
   updateNote,
+  deleteNote,
 } from "../utils/noteUtils";
 import { foldersLoader } from "../utils/folderUtils";
 const AuthLayout = () => {

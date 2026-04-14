@@ -7,12 +7,31 @@ import {
 } from "draft-js";
 import { Editor } from "react-draft-wysiwyg";
 import draftToHtml from "draftjs-to-html";
-import { useLoaderData, useLocation, useSubmit } from "react-router-dom";
+import {
+  useLoaderData,
+  useLocation,
+  useSubmit,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import { debounce } from "@mui/material";
 export default function Note() {
   const { note } = useLoaderData();
   const location = useLocation();
   const submit = useSubmit();
+  const navigate = useNavigate();
+  const { folderId } = useParams();
+
+  useEffect(() => {
+    if (!note) {
+      navigate(`/folders/${folderId}`, { replace: true });
+      return;
+    }
+  }, [note, navigate, folderId]);
+
+  if (!note) {
+    return null;
+  }
   const [editorState, setEditorState] = useState(() => {
     return EditorState.createEmpty();
   });

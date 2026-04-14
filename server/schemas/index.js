@@ -29,6 +29,7 @@ type Mutation{
     register(uid:String!, name:String!):Author,
     addNote(content:String!, folderId:ID!):Note,
     updateNote(id:String!,content:String!):Note,
+    deleteNote(id:String!):Message,
     pushNotification(content:String):Message
 }
 

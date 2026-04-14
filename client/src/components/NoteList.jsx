@@ -1,13 +1,17 @@
-import { NoteAltOutlined } from "@mui/icons-material";
+import { NoteAltOutlined, DeleteOutline } from "@mui/icons-material";
 import {
   Box,
   Card,
   CardContent,
+  Dialog,
+  DialogActions,
+  DialogTitle,
   Grid,
   IconButton,
   List,
   Tooltip,
   Typography,
+  Button,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import {
@@ -21,6 +25,7 @@ import {
 import moment from "moment";
 import { useToast } from "../hooks/useToast";
 import Toast from "./Toast";
+import { deleteNote } from "../utils/noteUtils";
 
 export default function NoteList({}) {
   const { folder } = useLoaderData();
@@ -31,6 +36,9 @@ export default function NoteList({}) {
   const navigate = useNavigate();
   const submit = useSubmit();
   const { toast, showToast, closeToast } = useToast();
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState(null);
+  const [deletedNoteIds, setDeletedNoteIds] = useState(new Set());
 
   const handleAddNewNote = () => {
     try {
@@ -45,6 +53,56 @@ export default function NoteList({}) {
     } catch (error) {
       showToast("Error creating note", "error");
     }
+  };
+
+  const handleDeleteClick = (e, noteId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setNoteToDelete(noteId);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!noteToDelete) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("id", noteToDelete);
+
+      await deleteNote({
+        params: {},
+        request: {
+          formData: () => Promise.resolve(formData),
+        },
+      });
+
+      // Add to deleted notes set for local UI update
+      setDeletedNoteIds((prev) => new Set([...prev, noteToDelete]));
+      setOpenDeleteDialog(false);
+      setNoteToDelete(null);
+
+      // If the deleted note is currently active, navigate to the first remaining note or folder
+      if (noteToDelete === activeNoteId) {
+        const remainingNotes = folder.notes.filter(
+          (note) => note.id !== noteToDelete,
+        );
+        if (remainingNotes.length > 0) {
+          navigate(`/folders/${folderId}/note/${remainingNotes[0].id}`);
+        } else {
+          navigate(`/folders/${folderId}`);
+        }
+      }
+
+      showToast("Note deleted successfully!", "success");
+    } catch (error) {
+      console.error("Error deleting note:", error);
+      showToast("Error deleting note", "error");
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setOpenDeleteDialog(false);
+    setNoteToDelete(null);
   };
   useEffect(() => {
     if (noteId) {
@@ -90,40 +148,63 @@ export default function NoteList({}) {
             </Box>
           }
         >
-          {folder.notes.map(({ id, content, updatedAt }) => {
-            return (
-              <Link
-                key={id}
-                to={`note/${id}`}
-                style={{ textDecoration: "none" }}
-                onClick={() => {
-                  setActiveNoteId(id);
-                }}
-              >
-                <Card
-                  sx={{
-                    mb: "5px",
-                    backgroundColor:
-                      id === activeNoteId ? "rgb(255 211 140)" : null,
+          {folder.notes
+            .filter((note) => !deletedNoteIds.has(note.id))
+            .map(({ id, content, updatedAt }) => {
+              return (
+                <Link
+                  key={id}
+                  to={`note/${id}`}
+                  style={{ textDecoration: "none" }}
+                  onClick={() => {
+                    setActiveNoteId(id);
                   }}
                 >
-                  <CardContent
-                    sx={{ "&:last-child": { pb: "10px" }, padding: "10px" }}
+                  <Card
+                    sx={{
+                      mb: "5px",
+                      backgroundColor:
+                        id === activeNoteId ? "rgb(255 211 140)" : null,
+                    }}
                   >
-                    <div
-                      style={{ fontSize: 14, fontWeight: "bold" }}
-                      dangerouslySetInnerHTML={{
-                        __html: `${content.substring(0, 30) || "Empty"}`,
-                      }}
-                    />
-                    <Typography sx={{ fontSize: "10px" }}>
-                      {moment(updatedAt).format("MMMM Do YYYY, h:mm:ss a")}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
+                    <CardContent
+                      sx={{ "&:last-child": { pb: "10px" }, padding: "10px" }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                        }}
+                      >
+                        <Box sx={{ flex: 1 }}>
+                          <div
+                            style={{ fontSize: 14, fontWeight: "bold" }}
+                            dangerouslySetInnerHTML={{
+                              __html: `${content.substring(0, 30) || "Empty"}`,
+                            }}
+                          />
+                          <Typography sx={{ fontSize: "10px" }}>
+                            {moment(updatedAt).format(
+                              "MMMM Do YYYY, h:mm:ss a",
+                            )}
+                          </Typography>
+                        </Box>
+                        <Tooltip title="Delete Note">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleDeleteClick(e, id)}
+                            sx={{ color: "error.main" }}
+                          >
+                            <DeleteOutline fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
         </List>
       </Grid>
       <Grid
@@ -142,6 +223,26 @@ export default function NoteList({}) {
         severity={toast.severity}
         onClose={closeToast}
       />
+      <Dialog
+        open={openDeleteDialog}
+        onClose={handleCancelDelete}
+        aria-labelledby="alert-dialog-title"
+      >
+        <DialogTitle id="alert-dialog-title">Delete Note?</DialogTitle>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+            autoFocus
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   );
 }

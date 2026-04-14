@@ -104,6 +104,11 @@ export const resolvers = {
       const note = await NoteModel.findByIdAndUpdate(noteId, args);
       return note;
     },
+    deleteNote: async (parent, args) => {
+      const { id } = args;
+      await NoteModel.findByIdAndDelete(id);
+      return { message: "Note deleted successfully" };
+    },
     pushNotification: async (parent, args) => {
       const newNotification = new notificationModel(args);
       pubsub.publish("PUSH_NOTIFICATION", {
