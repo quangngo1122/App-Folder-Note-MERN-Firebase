@@ -66,6 +66,12 @@ export const resolvers = {
         },
       });
       await newFolder.save();
+      // Thêm thông báo push khi tạo folder
+      pubsub.publish("PUSH_NOTIFICATION", {
+        notification: {
+          message: `Folder "${args.name}" vừa được tạo!`,
+        },
+      });
       return newFolder;
     },
     updateFolder: async (parent, args, context) => {
@@ -97,6 +103,12 @@ export const resolvers = {
     addNote: async (parent, args) => {
       const newNote = new NoteModel(args);
       await newNote.save();
+      // Thêm thông báo push khi tạo note
+      pubsub.publish("PUSH_NOTIFICATION", {
+        notification: {
+          message: "Bạn vừa tạo một Note mới thành công!",
+        },
+      });
       return newNote;
     },
     updateNote: async (parent, args) => {
