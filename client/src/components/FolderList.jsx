@@ -28,12 +28,12 @@ export default function FolderList({ folders, onUpdate }) {
     const folderName = folders.find((f) => f.id === folderId)?.name || "Folder";
     if (
       window.confirm(
-        "Are you sure you want to delete this folder and all its notes?",
+        "Bạn có chắc chắn muốn xóa thư mục này và tất cả các ghi chú bên trong không?",
       )
     ) {
       try {
         await deleteFolder(folderId);
-        showToast(`Folder "${folderName}" deleted successfully!`, "success");
+        showToast(`Folder "${folderName}" đã được xóa thành công!`, "success");
         onUpdate(); // Refresh folders
       } catch (error) {
         showToast("Error deleting folder", "error");

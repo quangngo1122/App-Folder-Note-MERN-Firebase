@@ -49,7 +49,7 @@ export default function NoteList({}) {
         },
         { method: "post", action: `/folders/${folderId}` },
       );
-      showToast("Note created successfully!", "success");
+      showToast("Đã tạo thành công 1 ghi chú mới!", "success");
     } catch (error) {
       showToast("Error creating note", "error");
     }
@@ -93,7 +93,7 @@ export default function NoteList({}) {
         }
       }
 
-      showToast("Note deleted successfully!", "success");
+      showToast("Đã xóa 1 ghi chú!", "success");
     } catch (error) {
       console.error("Error deleting note:", error);
       showToast("Error deleting note", "error");

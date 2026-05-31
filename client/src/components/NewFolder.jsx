@@ -41,7 +41,7 @@ export default function NewFolder() {
     try {
       const { addFolder } = await addNewFolder({ name: newFolderName });
       console.log({ addFolder });
-      showToast(`Folder "${newFolderName}" created successfully!`, "success");
+      showToast(`Folder "${newFolderName}" đã được tạo thành công!`, "success");
       handleClose();
     } catch (error) {
       showToast("Error creating folder", "error");

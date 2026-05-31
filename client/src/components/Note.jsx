@@ -22,33 +22,38 @@ export default function Note() {
   const navigate = useNavigate();
   const { folderId } = useParams();
 
-  useEffect(() => {
-    if (!note) {
-      navigate(`/folders/${folderId}`, { replace: true });
-      return;
-    }
-  }, [note, navigate, folderId]);
+  // useEffect(() => {
+  //   if (!note) {
+  //     navigate(`/folders/${folderId}`, { replace: true });
+  //     return;
+  //   }
+  // }, [note, navigate, folderId]);
 
-  if (!note) {
-    return null;
-  }
+  // if (!note) {
+  //   return null;
+  // }
+
   const [editorState, setEditorState] = useState(() => {
     return EditorState.createEmpty();
   });
 
-  const [rawHTML, setRawHTML] = useState(note.content);
-  useEffect(() => {
-    const blocksFromHTML = convertFromHTML(note.content);
-    const state = ContentState.createFromBlockArray(
-      blocksFromHTML.contentBlocks,
-      blocksFromHTML.entityMap,
-    );
-    setEditorState(EditorState.createWithContent(state));
-  }, [note.id]);
+  // const [rawHTML, setRawHTML] = useState(note.content);
+  //   useEffect(() => {
+  //     const blocksFromHTML = convertFromHTML(note.content);
+  //     const state = ContentState.createFromBlockArray(
+  //       blocksFromHTML.contentBlocks,
+  //       blocksFromHTML.entityMap,
+  //     );
+  //     setEditorState(EditorState.createWithContent(state));
+  //   }, [note.id]);
 
-  useEffect(() => {
-    debouncedMemorized(rawHTML, location.pathname, note);
-  }, [rawHTML, location.pathname]);
+  //   useEffect(() => {
+  //     debouncedMemorized(rawHTML, location.pathname, note);
+  //   }, [rawHTML, location.pathname]);
+
+  const [rawHTML, setRawHTML] = useState(() => {
+    return note?.content || "";
+  });
 
   const debouncedMemorized = useMemo(() => {
     return debounce((rawHTML, pathname, note) => {
@@ -68,8 +73,35 @@ export default function Note() {
   }, []);
 
   useEffect(() => {
+    if (!note) {
+      navigate(`/folders/${folderId}`, { replace: true });
+      return;
+    }
+  }, [note, navigate, folderId]);
+
+  useEffect(() => {
+    if (!note) return;
+    const blocksFromHTML = convertFromHTML(note.content);
+    const state = ContentState.createFromBlockArray(
+      blocksFromHTML.contentBlocks,
+      blocksFromHTML.entityMap,
+    );
+    setEditorState(EditorState.createWithContent(state));
+  }, [note?.id]);
+
+  useEffect(() => {
+    if (!note) return;
+    debouncedMemorized(rawHTML, location.pathname, note);
+  }, [rawHTML, location.pathname, debouncedMemorized, note]);
+
+  useEffect(() => {
+    if (!note) return;
     setRawHTML(note.content);
-  }, [note.content]);
+  }, [note?.content]);
+
+  if (!note) {
+    return null;
+  }
 
   const handleOnChange = (e) => {
     setEditorState(e);
