@@ -16,8 +16,8 @@ import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "../hooks/useToast";
 import Toast from "./Toast";
 
-export default function NewFolder() {
-  const [newFolderName, setNewFolderName] = useState();
+export default function NewFolder({ folders = [], onUpdate }) {
+  const [newFolderName, setNewFolderName] = useState("");
   const [open, setOpen] = useState(false);
   const [searchParam, setSearchParam] = useSearchParams();
   const { toast, showToast, closeToast } = useToast();
@@ -38,10 +38,28 @@ export default function NewFolder() {
     navigate(-1);
   };
   const handleAddNewFolder = async () => {
+    const normalizedName = newFolderName?.trim();
+    if (!normalizedName) {
+      showToast("Vui lòng nhập tên folder", "error");
+      return;
+    }
+
+    const nameExists = folders.some(
+      (folder) => folder.name?.toLowerCase() === normalizedName.toLowerCase(),
+    );
+    if (nameExists) {
+      showToast("Folder đã tồn tại", "error");
+      return;
+    }
+
     try {
-      const { addFolder } = await addNewFolder({ name: newFolderName });
+      const { addFolder } = await addNewFolder({ name: normalizedName });
       console.log({ addFolder });
-      showToast(`Folder "${newFolderName}" đã được tạo thành công!`, "success");
+      showToast(
+        `Folder "${normalizedName}" đã được tạo thành công!`,
+        "success",
+      );
+      if (onUpdate) onUpdate();
       handleClose();
     } catch (error) {
       showToast("Error creating folder", "error");

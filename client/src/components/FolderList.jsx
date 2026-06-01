@@ -64,7 +64,7 @@ export default function FolderList({ folders, onUpdate }) {
             <Typography sx={{ fontWeight: "bold", color: "white" }}>
               Folder
             </Typography>
-            <NewFolder />
+            <NewFolder folders={folders} onUpdate={onUpdate} />
           </Box>
         }
       >
@@ -112,7 +112,11 @@ export default function FolderList({ folders, onUpdate }) {
                     borderRadius: 1,
                   }}
                 >
-                  <EditFolder folder={{ id, name }} onUpdate={onUpdate} />
+                  <EditFolder
+                    folder={{ id, name }}
+                    folders={folders}
+                    onUpdate={onUpdate}
+                  />
                   <IconButton
                     size="small"
                     onClick={(e) => {

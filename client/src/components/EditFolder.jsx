@@ -16,7 +16,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "../hooks/useToast";
 import Toast from "./Toast";
 
-export default function EditFolder({ folder, onUpdate }) {
+export default function EditFolder({ folder, onUpdate, folders = [] }) {
   const [folderName, setFolderName] = useState(folder.name);
   const [open, setOpen] = useState(false);
   const [searchParam, setSearchParam] = useSearchParams();
@@ -39,14 +39,30 @@ export default function EditFolder({ folder, onUpdate }) {
   };
 
   const handleUpdateFolder = async () => {
+    const normalizedName = folderName?.trim();
+    if (!normalizedName) {
+      showToast("Vui lòng nhập tên folder", "error");
+      return;
+    }
+
+    const nameExists = folders.some(
+      (f) =>
+        f.id !== folder.id &&
+        f.name?.toLowerCase() === normalizedName.toLowerCase(),
+    );
+    if (nameExists) {
+      showToast("Folder đã tồn tại", "error");
+      return;
+    }
+
     try {
       const { updateFolder: updatedFolder } = await updateFolder({
         id: folder.id,
-        name: folderName,
+        name: normalizedName,
       });
       console.log({ updatedFolder });
-      showToast(`Folder renamed to "${folderName}"!`, "success");
-      onUpdate(); // Callback to refresh folders
+      showToast(`Folder renamed to "${normalizedName}"!`, "success");
+      if (onUpdate) onUpdate(); // Callback to refresh folders
       handleClose();
     } catch (error) {
       showToast("Error updating folder", "error");
