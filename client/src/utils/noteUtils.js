@@ -1,4 +1,5 @@
 import { graphQLRequest } from "./request";
+import { redirect } from "react-router-dom";
 
 export const notesLoader = async ({ params }) => {
   const query = `query Folder($folderId: String!) {
@@ -20,6 +21,10 @@ export const notesLoader = async ({ params }) => {
       folderId: params.folderId,
     },
   });
+
+  if (!data?.folder) {
+    return redirect("/");
+  }
 
   return data;
 };

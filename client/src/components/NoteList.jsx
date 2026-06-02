@@ -29,10 +29,10 @@ import { deleteNote } from "../utils/noteUtils";
 
 export default function NoteList({}) {
   const { folder } = useLoaderData();
-  // console.log(folder);
+  const folderNotes = folder?.notes ?? [];
+  const hasFolder = Boolean(folder);
   const { noteId, folderId } = useParams(); // duong dan
   const [activeNoteId, setActiveNoteId] = useState(noteId);
-  // const folder = { notes: [{ id: "1", content: "note 1" }] };
   const navigate = useNavigate();
   const submit = useSubmit();
   const { toast, showToast, closeToast } = useToast();
@@ -41,6 +41,11 @@ export default function NoteList({}) {
   const [deletedNoteIds, setDeletedNoteIds] = useState(new Set());
 
   const handleAddNewNote = () => {
+    if (!folderId || !hasFolder) {
+      showToast("Không có thư mục hợp lệ để tạo ghi chú.", "error");
+      return;
+    }
+
     try {
       submit(
         {
@@ -83,7 +88,7 @@ export default function NoteList({}) {
 
       // If the deleted note is currently active, navigate to the first remaining note or folder
       if (noteToDelete === activeNoteId) {
-        const remainingNotes = folder.notes.filter(
+        const remainingNotes = folderNotes.filter(
           (note) => note.id !== noteToDelete,
         );
         if (remainingNotes.length > 0) {
@@ -105,15 +110,26 @@ export default function NoteList({}) {
     setNoteToDelete(null);
   };
   useEffect(() => {
+    if (!hasFolder) {
+      navigate("/", { replace: true });
+      return;
+    }
+
     if (noteId) {
       setActiveNoteId(noteId);
       return;
     }
-    if (folder?.notes?.[0]) {
-      navigate(`note/${folder.notes[0].id}`);
+
+    if (folderNotes[0]) {
+      navigate(`note/${folderNotes[0].id}`);
       return;
     }
-  }, [noteId, folder.notes]);
+  }, [noteId, folderNotes, hasFolder, navigate]);
+
+  if (!hasFolder) {
+    return null;
+  }
+
   return (
     <Grid container height="100%" wrap="nowrap">
       <Grid
@@ -148,7 +164,7 @@ export default function NoteList({}) {
             </Box>
           }
         >
-          {folder.notes
+          {folderNotes
             .filter((note) => !deletedNoteIds.has(note.id))
             .map(({ id, content, updatedAt }) => {
               return (

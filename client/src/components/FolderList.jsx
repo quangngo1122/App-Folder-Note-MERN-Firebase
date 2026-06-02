@@ -7,7 +7,7 @@ import {
   IconButton,
   Button,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import NewFolder from "./NewFolder";
 import EditFolder from "./EditFolder";
@@ -23,6 +23,10 @@ export default function FolderList({ folders, onUpdate }) {
   const [activeFolderId, setActiveFolderId] = useState(folderId);
   const [hoveredFolderId, setHoveredFolderId] = useState(null);
   const { toast, showToast, closeToast } = useToast();
+
+  useEffect(() => {
+    setActiveFolderId(folderId);
+  }, [folderId]);
 
   const handleDelete = async (folderId) => {
     const folderName = folders.find((f) => f.id === folderId)?.name || "Folder";
