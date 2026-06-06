@@ -12,6 +12,8 @@ import {
   Tooltip,
   Typography,
   Button,
+  Divider,
+  Badge,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import {
@@ -31,7 +33,7 @@ export default function NoteList({}) {
   const { folder } = useLoaderData();
   const folderNotes = folder?.notes ?? [];
   const hasFolder = Boolean(folder);
-  const { noteId, folderId } = useParams(); // duong dan
+  const { noteId, folderId } = useParams();
   const [activeNoteId, setActiveNoteId] = useState(noteId);
   const navigate = useNavigate();
   const submit = useSubmit();
@@ -81,12 +83,10 @@ export default function NoteList({}) {
         },
       });
 
-      // Add to deleted notes set for local UI update
       setDeletedNoteIds((prev) => new Set([...prev, noteToDelete]));
       setOpenDeleteDialog(false);
       setNoteToDelete(null);
 
-      // If the deleted note is currently active, navigate to the first remaining note or folder
       if (noteToDelete === activeNoteId) {
         const remainingNotes = folderNotes.filter(
           (note) => note.id !== noteToDelete,
@@ -109,6 +109,7 @@ export default function NoteList({}) {
     setOpenDeleteDialog(false);
     setNoteToDelete(null);
   };
+
   useEffect(() => {
     if (!hasFolder) {
       navigate("/", { replace: true });
@@ -130,109 +131,221 @@ export default function NoteList({}) {
     return null;
   }
 
+  const visibleNotes = folderNotes.filter(
+    (note) => !deletedNoteIds.has(note.id),
+  );
+
   return (
     <Grid container height="100%" wrap="nowrap">
+      {/* Notes List Panel */}
       <Grid
         item
-        // xs={4}
         size={4}
         sx={{
           width: "100%",
           maxWidth: 360,
-          bgcolor: "#F0EBE3",
           height: "100%",
-          overflowY: "auto",
-          padding: "10px",
-          textAlign: "left",
+          display: "flex",
+          flexDirection: "column",
+          borderRight: "1px solid #e0e0e0",
+          background: "#ffffff",
         }}
       >
-        <List
-          subheader={
+        {/* Header */}
+        <Box
+          sx={{
+            px: 2,
+            py: 2.5,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderBottom: "2px solid #f0f0f0",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <NoteAltOutlined
+              sx={{
+                color: "#667eea",
+                fontSize: 24,
+              }}
+            />
+            <Box>
+              <Typography
+                sx={{
+                  fontWeight: 700,
+                  fontSize: 16,
+                  color: "#1a1a1a",
+                  fontFamily: "'Poppins', sans-serif",
+                }}
+              >
+                Notes
+              </Typography>
+              <Typography sx={{ fontSize: 12, color: "#999" }}>
+                {visibleNotes.length}{" "}
+                {visibleNotes.length === 1 ? "note" : "notes"}
+              </Typography>
+            </Box>
+          </Box>
+          <Tooltip title="Add New Note">
+            <IconButton
+              onClick={handleAddNewNote}
+              sx={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                color: "white",
+                width: 36,
+                height: 36,
+                "&:hover": {
+                  boxShadow: "0 4px 12px rgba(102, 126, 234, 0.4)",
+                  transform: "scale(1.05)",
+                },
+                transition: "all 0.2s",
+              }}
+            >
+              <NoteAltOutlined sx={{ fontSize: 20 }} />
+            </IconButton>
+          </Tooltip>
+        </Box>
+
+        {/* Notes List */}
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: "auto",
+            px: 1.5,
+            py: 1.5,
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+          }}
+        >
+          {visibleNotes.length === 0 ? (
             <Box
               sx={{
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "space-between",
+                justifyContent: "center",
+                height: "100%",
+                color: "#999",
+                gap: 1,
               }}
             >
-              <Typography sx={{ fontWeight: "bold" }}>Notes</Typography>
-              <Tooltip title="Add Note" onClick={handleAddNewNote}>
-                <IconButton size="small">
-                  <NoteAltOutlined />
-                </IconButton>
-              </Tooltip>
+              <NoteAltOutlined sx={{ fontSize: 48, opacity: 0.3 }} />
+              <Typography sx={{ fontSize: 14, opacity: 0.7 }}>
+                No notes yet
+              </Typography>
             </Box>
-          }
-        >
-          {folderNotes
-            .filter((note) => !deletedNoteIds.has(note.id))
-            .map(({ id, content, updatedAt }) => {
-              return (
-                <Link
-                  key={id}
-                  to={`note/${id}`}
-                  style={{ textDecoration: "none" }}
-                  onClick={() => {
-                    setActiveNoteId(id);
+          ) : (
+            visibleNotes.map(({ id, content, updatedAt }) => (
+              <Link
+                key={id}
+                to={`note/${id}`}
+                style={{ textDecoration: "none" }}
+                onClick={() => {
+                  setActiveNoteId(id);
+                }}
+              >
+                <Card
+                  sx={{
+                    background:
+                      id === activeNoteId
+                        ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                        : "#ffffff",
+                    border: "1px solid #e0e0e0",
+                    cursor: "pointer",
+                    transition:
+                      "all 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s",
+                    "&:hover": {
+                      boxShadow: "0 8px 24px rgba(102, 126, 234, 0.15)",
+                      transform: "translateY(-2px)",
+                      borderColor: "#667eea",
+                    },
                   }}
                 >
-                  <Card
-                    sx={{
-                      mb: "5px",
-                      backgroundColor:
-                        id === activeNoteId ? "rgb(255 211 140)" : null,
-                    }}
-                  >
-                    <CardContent
-                      sx={{ "&:last-child": { pb: "10px" }, padding: "10px" }}
+                  <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 1,
+                      }}
                     >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "flex-start",
-                        }}
-                      >
-                        <Box sx={{ flex: 1 }}>
-                          <div
-                            style={{ fontSize: 14, fontWeight: "bold" }}
-                            dangerouslySetInnerHTML={{
-                              __html: `${content.substring(0, 30) || "Empty"}`,
-                            }}
-                          />
-                          <Typography sx={{ fontSize: "10px" }}>
-                            {moment(updatedAt).format(
-                              "MMMM Do YYYY, h:mm:ss a",
-                            )}
-                          </Typography>
-                        </Box>
-                        <Tooltip title="Delete Note">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleDeleteClick(e, id)}
-                            sx={{ color: "error.main" }}
-                          >
-                            <DeleteOutline fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 600,
+                            color: id === activeNoteId ? "#ffffff" : "#1a1a1a",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            marginBottom: "6px",
+                          }}
+                          dangerouslySetInnerHTML={{
+                            __html: `${content.substring(0, 30) || "Empty"}`,
+                          }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: "12px",
+                            color:
+                              id === activeNoteId
+                                ? "rgba(255, 255, 255, 0.8)"
+                                : "#999",
+                          }}
+                        >
+                          {moment(updatedAt).format("MMM DD, HH:mm")}
+                        </Typography>
                       </Box>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-        </List>
+                      <Tooltip title="Delete Note">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleDeleteClick(e, id)}
+                          sx={{
+                            color:
+                              id === activeNoteId
+                                ? "rgba(255, 255, 255, 0.7)"
+                                : "#e74c3c",
+                            opacity: 0,
+                            transition: "opacity 0.2s",
+                            "&:hover": {
+                              background:
+                                id === activeNoteId
+                                  ? "rgba(255, 255, 255, 0.2)"
+                                  : "rgba(231, 76, 60, 0.1)",
+                            },
+                            // Show on hover of parent
+                            ...(id === activeNoteId && { opacity: 1 }),
+                          }}
+                        >
+                          <DeleteOutline sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))
+          )}
+        </Box>
       </Grid>
+
+      {/* Editor Panel */}
       <Grid
         item
-        //  xs={8}
         size={8}
         sx={{
           width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          background: "#fafafa",
         }}
       >
         <Outlet />
       </Grid>
+
+      {/* Toast & Dialogs */}
       <Toast
         open={toast.open}
         message={toast.message}
@@ -243,17 +356,37 @@ export default function NoteList({}) {
         open={openDeleteDialog}
         onClose={handleCancelDelete}
         aria-labelledby="alert-dialog-title"
+        PaperProps={{
+          sx: {
+            borderRadius: "12px",
+          },
+        }}
       >
-        <DialogTitle id="alert-dialog-title">Delete Note?</DialogTitle>
-        <DialogActions>
-          <Button onClick={handleCancelDelete} color="primary">
+        <DialogTitle id="alert-dialog-title" sx={{ fontWeight: 600 }}>
+          Delete this note?
+        </DialogTitle>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button
+            onClick={handleCancelDelete}
+            variant="outlined"
+            sx={{
+              borderRadius: "8px",
+              textTransform: "none",
+              fontWeight: 500,
+            }}
+          >
             Cancel
           </Button>
           <Button
             onClick={handleConfirmDelete}
-            color="error"
             variant="contained"
+            color="error"
             autoFocus
+            sx={{
+              borderRadius: "8px",
+              textTransform: "none",
+              fontWeight: 500,
+            }}
           >
             Delete
           </Button>

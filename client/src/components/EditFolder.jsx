@@ -25,7 +25,9 @@ export default function EditFolder({ folder, onUpdate, folders = [] }) {
   const popupName = searchParam.get("popup");
   const navigate = useNavigate();
 
-  const handleOpenPopup = () => {
+  const handleOpenPopup = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     setSearchParam({ popup: `edit-folder-${folder.id}` });
   };
 
@@ -60,9 +62,8 @@ export default function EditFolder({ folder, onUpdate, folders = [] }) {
         id: folder.id,
         name: normalizedName,
       });
-      console.log({ updatedFolder });
       showToast(`Folder renamed to "${normalizedName}"!`, "success");
-      if (onUpdate) onUpdate(); // Callback to refresh folders
+      if (onUpdate) onUpdate();
       handleClose();
     } catch (error) {
       showToast("Error updating folder", "error");
@@ -79,33 +80,86 @@ export default function EditFolder({ folder, onUpdate, folders = [] }) {
 
   return (
     <div>
-      <Tooltip title="Edit Folder" onClick={handleOpenPopup}>
-        <IconButton size="small">
-          <Edit sx={{ fontSize: 16 }} />
+      <Tooltip title="Edit Folder">
+        <IconButton
+          size="small"
+          onClick={handleOpenPopup}
+          sx={{
+            "&:hover": {
+              background: "rgba(102, 126, 234, 0.1)",
+            },
+          }}
+        >
+          <Edit sx={{ fontSize: 16, color: "#667eea" }} />
         </IconButton>
       </Tooltip>
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Edit Folder</DialogTitle>
-        <DialogContent>
+
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        PaperProps={{
+          sx: {
+            borderRadius: "12px",
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 600, fontSize: 18 }}>
+          Rename Folder
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
           <TextField
             autoFocus
             id="name"
-            margin="dense"
             label="Folder Name"
             fullWidth
             size="small"
-            variant="standard"
-            sx={{ width: "400px" }}
+            variant="outlined"
+            sx={{
+              width: "400px",
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                "&.Mui-focused fieldset": {
+                  borderColor: "#667eea",
+                },
+              },
+            }}
             autoComplete="off"
             value={folderName}
             onChange={handleFolderNameChange}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                handleUpdateFolder();
+              }
+            }}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleUpdateFolder}>OK</Button>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button
+            onClick={handleClose}
+            variant="outlined"
+            sx={{
+              borderRadius: "8px",
+              textTransform: "none",
+              fontWeight: 500,
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleUpdateFolder}
+            variant="contained"
+            sx={{
+              borderRadius: "8px",
+              textTransform: "none",
+              fontWeight: 500,
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            }}
+          >
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
+
       <Toast
         open={toast.open}
         message={toast.message}

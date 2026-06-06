@@ -14,7 +14,10 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
-import { debounce } from "@mui/material";
+import { debounce, Box, Typography, Divider, Chip } from "@mui/material";
+import moment from "moment";
+import { Edit as EditIcon } from "@mui/icons-material";
+
 export default function Note() {
   const { note } = useLoaderData();
   const location = useLocation();
@@ -107,11 +110,155 @@ export default function Note() {
     setEditorState(e);
     setRawHTML(draftToHtml(convertToRaw(e.getCurrentContent())));
   };
+
   return (
-    <Editor
-      editorState={editorState}
-      onEditorStateChange={handleOnChange}
-      placeholder="write something"
-    />
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        background: "#fafafa",
+      }}
+    >
+      {/* Editor Header */}
+      <Box
+        sx={{
+          px: 3,
+          py: 2,
+          borderBottom: "1px solid #e0e0e0",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          background: "#ffffff",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <EditIcon sx={{ color: "#667eea", fontSize: 24 }} />
+          <Box>
+            <Typography
+              sx={{
+                fontWeight: 600,
+                fontSize: 14,
+                color: "#999",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}
+            >
+              Editing Note
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: 12,
+                color: "#bbb",
+                mt: 0.5,
+              }}
+            >
+              Last saved: {moment(note.updatedAt).format("MMM DD, HH:mm")}
+            </Typography>
+          </Box>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Chip
+            label={moment(note.updatedAt).fromNow()}
+            variant="outlined"
+            size="small"
+            sx={{
+              borderColor: "#e0e0e0",
+              color: "#666",
+              fontSize: 12,
+            }}
+          />
+        </Box>
+      </Box>
+
+      {/* Editor */}
+      <Box
+        sx={{
+          flex: 1,
+          overflow: "auto",
+          p: 3,
+        }}
+      >
+        <Box
+          sx={{
+            background: "#ffffff",
+            borderRadius: "12px",
+            padding: 2.5,
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
+            border: "1px solid #e0e0e0",
+            height: "100%",
+            "& .rdw-editor-wrapper": {
+              border: "none",
+              borderRadius: "8px",
+            },
+            "& .rdw-editor-toolbar": {
+              background: "#f8f9fa",
+              borderBottom: "1px solid #e0e0e0",
+              borderRadius: "6px 6px 0 0",
+              padding: "8px",
+              marginBottom: "8px",
+            },
+            "& .rdw-editor-main": {
+              padding: "12px 8px",
+              minHeight: "400px",
+              fontSize: "16px",
+              lineHeight: "1.6",
+              fontFamily: "'Inter', sans-serif",
+            },
+            "& .rdwRte": {
+              borderRadius: "8px",
+            },
+            "& .DraftEditor-root": {
+              background: "white",
+            },
+          }}
+        >
+          <Editor
+            editorState={editorState}
+            onEditorStateChange={handleOnChange}
+            placeholder="Start typing your note here..."
+            toolbar={{
+              options: [
+                "inline",
+                "blockType",
+                "fontSize",
+                "fontFamily",
+                "list",
+                "textAlign",
+                "colorPicker",
+                "link",
+                "embedded",
+                "emoji",
+                "image",
+                "remove",
+                "history",
+              ],
+              inline: {
+                inDropdown: false,
+              },
+              blockType: {
+                inDropdown: true,
+              },
+              fontSize: {
+                icon: "fontSize",
+                options: [
+                  8, 9, 10, 11, 12, 14, 16, 18, 24, 30, 36, 48, 60, 72, 96,
+                ],
+              },
+              fontFamily: {
+                options: [
+                  "Arial",
+                  "Georgia",
+                  "Impact",
+                  "Tahoma",
+                  "Times New Roman",
+                  "Verdana",
+                ],
+              },
+            }}
+          />
+        </Box>
+      </Box>
+    </Box>
   );
 }
